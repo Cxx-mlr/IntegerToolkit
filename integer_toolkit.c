@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <stdarg.h>
 
-// UTILITY FUNCTIONS
+// Integer Properties and Validation Functions
 
 unsigned int length(int number) {
     if (number == 0) return 1;
@@ -11,19 +11,21 @@ unsigned int length(int number) {
 }
 
 int is_empty(int number) {
-    return number == 0;
+    if (number == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+int in_range(int number, int start, int stop) {
+    return number >= start && number < stop;
 }
 
 int index_ok(int number, int index) {
-    return index >= 0 && index < length(number);
+    return in_range(index, 0, length(number));
 }
 
-int with_zeros(int number, int quantity) {
-    assert(quantity >= 0);
-    return number * (int) floor(pow(10, quantity));
-}
-
-// PUSH AND POP
+// Integer Manipulation Functions
 
 void push_front(int *number, int digit_or_number) {
     if (!is_empty(*number)) {
@@ -60,7 +62,7 @@ int pop_back(int *number) {
 
 void insert(int *number, int index, int digit_or_number) {
     unsigned int number_length = length(*number);
-    assert((index >= 0 && index <= number_length));
+    assert(in_range(index, 0, number_length + 1));
     int popped_value = pop_back_n(number, number_length - index);
 
     push_back(number, digit_or_number);
@@ -69,7 +71,7 @@ void insert(int *number, int index, int digit_or_number) {
     }
 }
 
-// PEEK FUNCTIONS
+// Integer Inspection Functions
 
 int front_n(int number, int n) {
     return (int) floor(number / pow(10, fdim(length(number), n)));
@@ -92,7 +94,7 @@ int at(int number, int index) {
     return back(front_n(number, index + 1));
 }
 
-// UTILITY FUNCTIONS
+// Utility Functions
 
 int concat(int argc, ...){
     va_list argv;
@@ -109,6 +111,11 @@ int concat(int argc, ...){
 
     va_end(argv);
     return result;
+}
+
+int with_zeros(int number, int quantity) {
+    assert(quantity >= 0);
+    return number * (int) floor(pow(10, quantity));
 }
 
 void set_digit(int *number, int index, int digit_or_number) {
@@ -133,7 +140,7 @@ void swap(int *number, int i, int j) {
     set_digit(number, j, tmp_i);
 }
 
-// STRING-LIKE FUNCTIONS
+// String-Like Functions
 
 int contains(int number, int digit_or_number) {
     return find_first_of(number, digit_or_number) != -1;
@@ -155,7 +162,18 @@ int reversed(int number) {
     return result;
 }
 
-// SEARCH FUNCTIONS
+// Search Functions
+
+int find_first_of(int number, int digit_or_number) {
+    int number_length = length(number);
+    int digit_or_number_length = length(digit_or_number);
+    for (int from = 0; from + digit_or_number_length <= number_length; from += 1) {
+        if (number_from_to(number, from, from + digit_or_number_length) == digit_or_number) {
+            return from;
+        }
+    }
+    return -1;
+}
 
 int find_last_of(int number, int digit_or_number) {
     int number_length = length(number);
@@ -169,18 +187,7 @@ int find_last_of(int number, int digit_or_number) {
     return -1;
 }
 
-int find_first_of(int number, int digit_or_number) {
-    int number_length = length(number);
-    int digit_or_number_length = length(digit_or_number);
-    for (int from = 0; from + digit_or_number_length <= number_length; from += 1) {
-        if (number_from_to(number, from, from + digit_or_number_length) == digit_or_number) {
-            return from;
-        }
-    }
-    return -1;
-}
-
-// REMOVE FUNCTIONS
+// Remove Functions
 
 void remove_first_of(int *number, int digit_or_number) {
     int index = find_first_of(*number, digit_or_number);
@@ -236,17 +243,7 @@ int count_occurrences_of(int number, int digit_or_number) {
     return counter;
 }
 
-int min_digit(int number) {
-    int number_length = length(number);
-    int min_digit = 9;
-    for (int index = 0; index < number_length; ++index) {
-        int current_digit = at(number, index);
-        if (current_digit < min_digit) {
-            min_digit = current_digit;
-        }
-    }
-    return min_digit;
-}
+// Min Max Functions
 
 int max_digit(int number) {
     int number_length = length(number);
@@ -260,7 +257,19 @@ int max_digit(int number) {
     return max_digit;
 }
 
-// ARITHMETIC FUNCTIONS
+int min_digit(int number) {
+    int number_length = length(number);
+    int min_digit = 9;
+    for (int index = 0; index < number_length; ++index) {
+        int current_digit = at(number, index);
+        if (current_digit < min_digit) {
+            min_digit = current_digit;
+        }
+    }
+    return min_digit;
+}
+
+// Reduction Functions
 
 int reduce(int number, int(*func)(int, int), int initial) {
     while (!is_empty(number)) {
@@ -282,18 +291,17 @@ int sum_digits(int number) {
     return result;
 }
 
-// RANGE FUNCTIONS
+// Range Functions
 
 int range(int start, int stop, int step) {
     assert(start >= 0);
     assert(step > 0);
     assert(start <= stop);
-    int result = 0;
 
-    int index = start;
-    while (index < stop) {
-        push_back(&result, index);
-        index += step;
+    int result = 0;
+    while (start < stop) {
+        push_back(&result, start);
+        start += step;
     }
 
     return result;
@@ -301,15 +309,15 @@ int range(int start, int stop, int step) {
 
 int number_from_to(int number, int from, int to) {
     int number_length = length(number);
-    assert(from >= 0 && from <= number_length);
-    assert(to >= 0 && to <= number_length);
+    assert(in_range(from, 0, number_length + 1));
+    assert(in_range(to, 0, number_length + 1));
     assert(from <= to);
 
     (void) pop_back_n(&number, length(number) - to);
     return back_n(number, (int) fabs(to - from));
 }
 
-// SORTING FUNCTIONS
+// Sorting Functions
 
 void bubble_sort(int *number) {
     remove_all(number, 0);
@@ -324,7 +332,7 @@ void bubble_sort(int *number) {
     }
 }
 
-// DIVISIBILITY FUNCTIONS
+// Divisibility Functions
 
 int divisible_by_2(int number) {
     if (back(number) % 2 == 0) {
