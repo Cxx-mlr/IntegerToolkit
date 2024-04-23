@@ -34,7 +34,8 @@ int contains(int number, int value);
 int startswith(int number, int value);
 int endswith(int number, int value);
 int reversed(int number);
-int find(int number, int value);
+int find_last_of(int number, int value);
+int find_first_of(int number, int value);
 
 // RANGE FUNCTIONS
 int range(int start, int stop, int step);
