@@ -69,13 +69,14 @@ void insert(int *number, int index, int value) {
 }
 
 void remove_subnumber(int *number, int value) {
-    int index = find(*number, value);
+    int index = find_first_of(*number, value);
     assert(index != -1);
 
     int fn = number_from_to(*number, 0, index);
     int bn = number_from_to(*number, index + length(value), length(*number));
-
-    if (is_empty(bn)) bn = -1;
+    if (is_empty(bn)) {
+        bn = -1;
+    }
     *number = concat(2, fn, bn);
 }
 
@@ -99,25 +100,25 @@ int back(int number) {
 
 int at(int number, int index) {
     assert(index_ok(number, index));
-    return front(back_n(number, length(number) - index));
+    return back(front_n(number, index + 1));
 }
 
 // UTILITY FUNCTIONS
 
-int concat(int n, ...){
-    va_list args;
-    va_start(args, n);
+int concat(int argc, ...){
+    va_list argv;
+    va_start(argv, argc);
 
     int result = 0;
 
-    for (int i = 0; i < n; ++i) {
-        int number = va_arg(args, int);
+    for (int i = 0; i < argc; ++i) {
+        int number = va_arg(argv, int);
         if (number < 0) continue;
 
         push_back(&result, number);
     }
 
-    va_end(args);
+    va_end(argv);
     return result;
 }
 
@@ -132,22 +133,10 @@ void swap(int *number, int i, int j) {
     assert(index_ok(*number, i));
     assert(index_ok(*number, j));
 
-    unsigned const int size = length(*number);
-    int result = 0;
+    int tmp_i = at(*number, i);
 
-    for (unsigned int k = 0; k < size; ++k) {
-        if (k == i) {
-            push_back(&result, at(*number, j));
-        }
-        else if (k == j) {
-            push_back(&result, at(*number, i));
-        }
-        else {
-            push_back(&result, at(*number, k));
-        }
-    }
-
-    *number = result;
+    set_value(number, i, at(*number, j));
+    set_value(number, j, tmp_i);
 }
 
 // STRING-LIKE FUNCTIONS
@@ -177,20 +166,26 @@ int reversed(int number) {
     return result;
 }
 
-int find(int number, int value) {
+int find_last_of(int number, int value) {
+    int number_length = length(number);
     int value_length = length(value);
-    int index = 0;
-
-    while (!is_empty(number) && length(number) >= value_length) {
-        if (front_n(number, value_length) == value) {
-            return index;
+    
+    for (int to = number_length; to - value_length >= 0; to -= 1) {
+        if (number_from_to(number, to - value_length, to) == value) {
+            return to - value_length;
         }
-        else {
-            (void) pop_front(&number);
-        }
-        ++index;
     }
+    return -1;
+}
 
+int find_first_of(int number, int value) {
+    int number_length = length(number);
+    int value_length = length(value);
+    for (int from = 0; from + value_length <= number_length; from += 1) {
+        if (number_from_to(number, from, from + value_length) == value) {
+            return from;
+        }
+    }
     return -1;
 }
 
@@ -215,15 +210,19 @@ int number_from_to(int number, int from, int to) {
     int number_length = length(number);
     assert(from >= 0 && from <= number_length);
     assert(to >= 0 && to <= number_length);
+    assert(from <= to);
 
-    (void) pop_front_n(&number, from);
-    
-    return front_n(number, to - from);
+    (void) pop_back_n(&number, length(number) - to);
+    return back_n(number, (int) fabs(to - from));
 }
 
 // SORTING FUNCTIONS
 
 void bubble_sort(int *number) {
+    while (contains(*number, 0)) {
+        remove_subnumber(number, 0);
+    }
+
     int iterations = length(*number);
     for (int i = 0; i < iterations - 1; ++i) {
         for (int j = 0; j < iterations - 1; ++j) {
