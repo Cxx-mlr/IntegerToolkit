@@ -78,8 +78,12 @@ These functions allow you to remove digits or numbers from integers:
 - `remove_all`: Remove all occurrences of a specific digit or number.
 - `remove_digit_if`: Remove digits based on custom conditions.
 - `count_occurrences_of`: Count the number of occurrences of a specific digit or number.
-- `max_digit`: Find the maximum digit in an integer.
+
+### **Min and Max Functions**
+
+These functions allow you to find the minimum and maximum digits in integers:
 - `min_digit`: Find the minimum digit in an integer.
+- `max_digit`: Find the maximum digit in an integer.
 
 ### Reduction Functions
 
